@@ -64,6 +64,9 @@ class AudioService : MediaBrowserServiceCompat() {
     private lateinit var player: ExoPlayer
     private lateinit var session: MediaSessionCompat
 
+    /** Önceki/sonraki için çalma sırası; gezinme ağacında gösterilen listelerden beslenir. */
+    private val queue = PlayQueue()
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val playables = ConcurrentHashMap<String, PlayableInfo>()
     private var current: PlayableInfo? = null
@@ -145,6 +148,7 @@ class AudioService : MediaBrowserServiceCompat() {
             val items = withContext(Dispatchers.IO) {
                 runCatching { loadChildren(parentId) }.getOrDefault(emptyList())
             }
+            rememberPlayables(parentId, items)
             result.sendResult(items.toMutableList())
         }
     }
@@ -161,8 +165,15 @@ class AudioService : MediaBrowserServiceCompat() {
                 val podcasts = runCatching { PodcastRepository.search(query, 15) }.getOrDefault(emptyList())
                 stations.map { stationItem(it) } + podcasts.map { podcastItem(it) }
             }
+            rememberPlayables(MediaIds.SEARCH_KEY_PREFIX + query, items)
             result.sendResult(items.toMutableList())
         }
+    }
+
+    /** Gösterilen listedeki çalınabilir öğeleri, önceki/sonraki için çalma sırası adayı olarak kaydeder. */
+    private fun rememberPlayables(key: String, items: List<MediaBrowserCompat.MediaItem>) {
+        val ids = items.filter { it.isPlayable }.mapNotNull { it.mediaId }
+        if (ids.isNotEmpty()) queue.remember(key, ids)
     }
 
     private fun loadChildren(parentId: String): List<MediaBrowserCompat.MediaItem> = when {
@@ -273,6 +284,18 @@ class AudioService : MediaBrowserServiceCompat() {
 
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
 
+        override fun onSkipToNext() = skip(forward = true)
+
+        override fun onSkipToPrevious() {
+            val info = current
+            // Kayıtlı bir bölümde 3 saniyeden fazla ilerlenmişse "önceki" başa sarar (standart davranış).
+            if (info != null && !info.isLive && player.currentPosition > RESTART_THRESHOLD_MS) {
+                player.seekTo(0L)
+                return
+            }
+            skip(forward = false)
+        }
+
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             if (mediaId == null) return
             val extraUrl = extras?.getString(MediaIds.EXTRA_URL)
@@ -286,6 +309,7 @@ class AudioService : MediaBrowserServiceCompat() {
                 }
             if (info != null) {
                 playables[mediaId] = info
+                queue.select(mediaId, extras?.getString(MediaIds.EXTRA_LIST_KEY))
                 playInfo(info)
             } else {
                 publishError()
@@ -318,6 +342,7 @@ class AudioService : MediaBrowserServiceCompat() {
             }
             if (info != null) {
                 playables[info.mediaId] = info
+                queue.select(info.mediaId)
                 playInfo(info)
             } else {
                 publishError()
@@ -353,9 +378,21 @@ class AudioService : MediaBrowserServiceCompat() {
         }
     }
 
+    /** Çalma sırasındaki sonraki/önceki öğeye geçer; sıra tek öğeliyse hiçbir şey yapmaz. */
+    private fun skip(forward: Boolean) {
+        val id = (if (forward) queue.next() else queue.previous()) ?: return
+        val info = playables[id]
+        if (info == null) {
+            publishError()
+            return
+        }
+        playInfo(info)
+    }
+
     private fun stopPlayback() {
         player.stop()
         player.clearMediaItems()
+        queue.clear()
         current = null
         liveTitle = null
         session.isActive = false
@@ -421,6 +458,10 @@ class AudioService : MediaBrowserServiceCompat() {
         }
         var actions = BASE_ACTIONS
         if (info != null && !info.isLive) actions = actions or PlaybackStateCompat.ACTION_SEEK_TO
+        // Önceki/sonraki yalnızca sırada gerçekten başka öğe varken duyurulur (araç ekranı ve direksiyon tuşları buna bakar).
+        if (info != null && queue.hasMultiple) {
+            actions = actions or PlaybackStateCompat.ACTION_SKIP_TO_NEXT or PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        }
         val position =
             if (info == null || info.isLive) PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN else player.currentPosition
         val builder = PlaybackStateCompat.Builder()
@@ -528,6 +569,7 @@ class AudioService : MediaBrowserServiceCompat() {
     private companion object {
         const val CHANNEL_ID = "yasin_audio_playback"
         const val NOTIF_ID = 4201
+        const val RESTART_THRESHOLD_MS = 3_000L
         const val ACTION_TOGGLE = "com.yasincarplay.audio.TOGGLE"
         const val ACTION_STOP = "com.yasincarplay.audio.STOP"
         const val BASE_ACTIONS = PlaybackStateCompat.ACTION_PLAY or

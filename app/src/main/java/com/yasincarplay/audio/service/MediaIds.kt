@@ -30,6 +30,12 @@ object MediaIds {
     const val EXTRA_AUTHOR = "yasin.author"
     const val EXTRA_ARTWORK = "yasin.artwork"
 
+    /** Telefon arayüzü, öğeyi hangi listeden çaldırdığını bildirir; önceki/sonraki bu listeyi izler. */
+    const val EXTRA_LIST_KEY = "yasin.list_key"
+
+    /** Arama sonuçlarının liste anahtarı öneki: "search:<sorgu>" */
+    const val SEARCH_KEY_PREFIX = "search:"
+
     const val KIND_STATION = "station"
     const val KIND_PODCAST = "podcast"
     const val KIND_EPISODE = "episode"
