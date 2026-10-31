@@ -9,6 +9,12 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Hız göstergesi: yalnızca uygulama ekrandayken GPS'ten gerçek hızı okur (arka plan konumu yok). -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-feature android:name="android.hardware.location" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
     <!-- Bazı eski radyo yayınları düz HTTP kullanır, bu yüzden cleartext açık. -->
     <application
         android:allowBackup="false"
