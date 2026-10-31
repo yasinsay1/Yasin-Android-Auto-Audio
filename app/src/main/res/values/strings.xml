@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yasin Android Auto Audio</string>
+    <string name="tab_radio">Radyo</string>
+    <string name="tab_favorites">Favoriler</string>
+    <string name="tab_podcasts">Podcast</string>
+    <string name="tab_youtube">YouTube Music</string>
+    <string name="search_hint">Radyo veya podcast ara</string>
+    <string name="search">Ara</string>
+    <string name="empty_list">Liste boş veya yüklenemedi.</string>
+    <string name="nothing_playing">Hiçbir şey çalmıyor</string>
+    <string name="play">Oynat</string>
+    <string name="pause">Duraklat</string>
+    <string name="favorite_add">☆ Favori</string>
+    <string name="favorite_remove">★ Favori</string>
+    <string name="subscribe">+ Abone ol</string>
+    <string name="unsubscribe">✓ Abone</string>
+    <string name="yt_hint">YouTube Music\'te ara</string>
+    <string name="yt_open_app">YouTube Music\'i aç</string>
+    <string name="yt_search">YouTube Music\'te ara</string>
+    <string name="yt_note">YouTube Music resmi uygulaması açılır. YouTube sesi bu uygulamanın içinde çalınmaz; arabada çalmak için YouTube Music\'in kendi Android Auto desteğini kullanın.</string>
+    <string name="yt_not_installed">YouTube Music yüklü değil, tarayıcıda açılıyor.</string>
+    <string name="notif_channel">Medya oynatma</string>
+    <string name="root_radio">Radyo</string>
+    <string name="root_radio_favorites">Favori radyolar</string>
+    <string name="root_radio_top">Popüler radyolar (Türkiye)</string>
+    <string name="root_podcasts">Podcast</string>
+    <string name="root_podcast_subs">Abonelikler</string>
+    <string name="root_podcast_top">Podcast keşfet (Türkiye)</string>
+    <string name="playback_error">Oynatma hatası</string>
+</resources>
