@@ -1,67 +1,133 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="#08090B"
+    android:padding="12dp"
+    android:fitsSystemWindows="true">
 
-    <TextView
+    <!-- Üst kokpit başlığı -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/app_name"
-        android:textColor="@color/on_surface"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="#151619">
 
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="YASIN  ANDROID AUTO"
+            android:textColor="#D9BC73"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:letterSpacing="0.08" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● AUDIO"
+            android:textColor="#77D69B"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Gösterge paneli alanı -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="14dp"
+        android:layout_marginTop="10dp"
+        android:background="#101114">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MEDIA CONTROL CENTER"
+            android:textColor="#888991"
+            android:textSize="11sp"
+            android:letterSpacing="0.16" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="RADIO  •  MUSIC  •  PODCAST"
+            android:textColor="#D9BC73"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Mevcut sekmeler: işlevleri korunur -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface_variant"
-        app:tabIndicatorColor="@color/accent_red"
+        android:layout_marginTop="10dp"
+        android:background="#17181B"
+        app:tabIndicatorColor="#D9BC73"
+        app:tabIndicatorHeight="3dp"
         app:tabMode="scrollable"
-        app:tabSelectedTextColor="@color/accent_red"
-        app:tabTextColor="@color/on_surface_dim" />
+        app:tabSelectedTextColor="#D9BC73"
+        app:tabTextColor="#A4A5AA" />
 
+    <!-- Arama satırı -->
     <LinearLayout
         android:id="@+id/searchRow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:gravity="center_vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <EditText
             android:id="@+id/searchInput"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:hint="@string/search_hint"
             android:imeOptions="actionSearch"
             android:importantForAutofill="no"
             android:inputType="text"
             android:maxLines="1"
-            android:textColor="@color/on_surface"
-            android:textColorHint="@color/on_surface_dim" />
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="#1B1C20"
+            android:textColor="#F0F0F0"
+            android:textColorHint="#888991" />
 
         <Button
             android:id="@+id/searchButton"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/search" />
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/search"
+            android:textColor="#08090B"
+            android:backgroundTint="#D9BC73" />
     </LinearLayout>
 
+    <!-- Radyo ve podcast listesi -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:background="#0D0E10">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp" />
 
         <TextView
             android:id="@+id/emptyText"
@@ -71,60 +137,81 @@
             android:gravity="center"
             android:padding="24dp"
             android:text="@string/empty_list"
-            android:textColor="@color/on_surface_dim"
+            android:textColor="#A4A5AA"
             android:visibility="gone" />
 
+        <!-- YouTube Music paneli -->
         <LinearLayout
             android:id="@+id/ytPanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:background="#101114">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="YOUTUBE MUSIC"
+                android:textColor="#D9BC73"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:padding="12dp" />
 
             <EditText
                 android:id="@+id/ytQuery"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="48dp"
                 android:hint="@string/yt_hint"
                 android:imeOptions="actionSearch"
                 android:importantForAutofill="no"
                 android:inputType="text"
                 android:maxLines="1"
-                android:textColor="@color/on_surface"
-                android:textColorHint="@color/on_surface_dim" />
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:background="#1B1C20"
+                android:textColor="#F0F0F0"
+                android:textColorHint="#888991" />
 
             <Button
                 android:id="@+id/ytSearchButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/yt_search" />
+                android:layout_marginTop="12dp"
+                android:text="@string/yt_search"
+                android:textColor="#08090B"
+                android:backgroundTint="#D9BC73" />
 
             <Button
                 android:id="@+id/ytOpenButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="@string/yt_open_app" />
+                android:text="@string/yt_open_app"
+                android:textColor="#D9BC73"
+                android:backgroundTint="#25262A" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/yt_note"
-                android:textColor="@color/on_surface_dim" />
+                android:textColor="#A4A5AA" />
         </LinearLayout>
     </FrameLayout>
 
+    <!-- Alt medya kontrol paneli -->
     <LinearLayout
         android:id="@+id/miniPlayer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/surface_variant"
-        android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:layout_marginTop="10dp"
+        android:background="#1A1B1F">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -133,14 +220,23 @@
             android:orientation="vertical">
 
             <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="NOW PLAYING"
+                android:textColor="#D9BC73"
+                android:textSize="10sp"
+                android:letterSpacing="0.12" />
+
+            <TextView
                 android:id="@+id/nowTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:text="@string/nothing_playing"
-                android:textColor="@color/on_surface"
-                android:textSize="16sp"
+                android:textColor="#F0F0F0"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -149,16 +245,20 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="1"
-                android:textColor="@color/on_surface_dim"
-                android:textSize="13sp" />
+                android:textColor="#A4A5AA"
+                android:textSize="12sp" />
         </LinearLayout>
 
         <ImageButton
             android:id="@+id/playPause"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#D9BC73"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/play"
-            android:src="@drawable/ic_play" />
+            android:src="@drawable/ic_play"
+            app:tint="#D9BC73" />
     </LinearLayout>
+
 </LinearLayout>
