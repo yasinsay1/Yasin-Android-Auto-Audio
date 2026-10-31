@@ -6,4 +6,17 @@
     <color name="accent_red">#E02B2B</color>
     <color name="on_surface">#EDEDED</color>
     <color name="on_surface_dim">#A0A0A8</color>
+
+    <!-- AGAMA tarzı gösterge paneli paleti -->
+    <color name="carbon_bg">#0A0A0C</color>
+    <color name="gold">#D9B86C</color>
+    <color name="gold_bright">#F0D494</color>
+    <color name="gold_dim">#6B5B33</color>
+    <color name="panel">#141416</color>
+    <color name="panel_stroke">#3A3325</color>
+    <color name="text_primary">#F5F2EA</color>
+    <color name="text_dim">#9A958A</color>
+    <color name="speed_green">#3DBE5B</color>
+    <color name="speed_gold">#D9B86C</color>
+    <color name="speed_red">#E04B3A</color>
 </resources>

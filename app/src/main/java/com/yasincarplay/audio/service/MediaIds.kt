@@ -26,6 +26,8 @@ object MediaIds {
     const val EXTRA_URL = "yasin.url"
     const val EXTRA_COUNTRY = "yasin.country"
     const val EXTRA_TAGS = "yasin.tags"
+    /** Çalınan öğenin ait olduğu liste (önceki/sonraki için): String[] medya ID'leri. */
+    const val EXTRA_LIST_IDS = "yasin.list_ids"
     const val EXTRA_FEED = "yasin.feed"
     const val EXTRA_AUTHOR = "yasin.author"
     const val EXTRA_ARTWORK = "yasin.artwork"

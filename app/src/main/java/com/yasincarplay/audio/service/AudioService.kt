@@ -70,6 +70,9 @@ class AudioService : MediaBrowserServiceCompat() {
     private var liveTitle: String? = null
     private var isForeground = false
 
+    /** Çalınan öğenin ait olduğu liste (medya ID sırası) — önceki/sonraki için. */
+    private var currentListIds: List<String> = emptyList()
+
     private val notificationManager: NotificationManager
         get() = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
@@ -273,6 +276,10 @@ class AudioService : MediaBrowserServiceCompat() {
 
         override fun onSeekTo(pos: Long) = player.seekTo(pos)
 
+        override fun onSkipToNext() = skip(1)
+
+        override fun onSkipToPrevious() = skip(-1)
+
         override fun onPlayFromMediaId(mediaId: String?, extras: Bundle?) {
             if (mediaId == null) return
             val extraUrl = extras?.getString(MediaIds.EXTRA_URL)
@@ -286,6 +293,7 @@ class AudioService : MediaBrowserServiceCompat() {
                 }
             if (info != null) {
                 playables[mediaId] = info
+                extras?.getStringArray(MediaIds.EXTRA_LIST_IDS)?.let { currentListIds = it.toList() }
                 playInfo(info)
             } else {
                 publishError()
@@ -294,6 +302,24 @@ class AudioService : MediaBrowserServiceCompat() {
 
         override fun onPlayFromSearch(query: String?, extras: Bundle?) {
             playFromSearch(query)
+        }
+    }
+
+    /**
+     * Önceki/sonraki: çalınan öğenin ait olduğu listede (extras ile gelen sıralı ID'ler)
+     * ileri/geri geçer. Canlı radyoda "sonraki" listedeki bir sonraki istasyondur.
+     * Liste yoksa (ör. yalnızca sesli komutla başlatıldıysa) komut yoksayılır.
+     */
+    private fun skip(direction: Int) {
+        val cur = current ?: return
+        val list = currentListIds
+        if (list.isEmpty()) return
+        val index = list.indexOf(cur.mediaId)
+        if (index < 0) return
+        val targetId = list[(index + direction + list.size) % list.size]
+        val info = playables[targetId]
+        if (info != null) {
+            playInfo(info)
         }
     }
 
@@ -357,6 +383,7 @@ class AudioService : MediaBrowserServiceCompat() {
         player.stop()
         player.clearMediaItems()
         current = null
+        currentListIds = emptyList()
         liveTitle = null
         session.isActive = false
         session.setMetadata(null)
@@ -421,6 +448,12 @@ class AudioService : MediaBrowserServiceCompat() {
         }
         var actions = BASE_ACTIONS
         if (info != null && !info.isLive) actions = actions or PlaybackStateCompat.ACTION_SEEK_TO
+        // Önceki/sonraki yalnızca bir liste bağlamı varken (telefon ve Android Auto'da) görünür
+        if (info != null && currentListIds.isNotEmpty()) {
+            actions = actions or
+                PlaybackStateCompat.ACTION_SKIP_TO_NEXT or
+                PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        }
         val position =
             if (info == null || info.isLive) PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN else player.currentPosition
         val builder = PlaybackStateCompat.Builder()

@@ -28,6 +28,9 @@ class MediaAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun refresh() = notifyDataSetChanged()
 
+    /** Mevcut liste (önceki/sonraki için bağlam aktarmada kullanılır). */
+    fun items(): List<MediaBrowserCompat.MediaItem> = items
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         ViewHolder(ItemMediaBinding.inflate(LayoutInflater.from(parent.context), parent, false))
 

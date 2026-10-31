@@ -1,183 +1,532 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#101216"
-    android:padding="12dp">
+    android:background="@color/carbon_bg">
 
-    <TextView
-        android:id="@+id/appTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="YASIN ANDROID AUTO AUDIO"
-        android:textColor="#D9B86C"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp" />
-
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#151619"
-        app:tabIndicatorColor="#D9B86C"
-        app:tabSelectedTextColor="#D9B86C"
-        app:tabTextColor="#B8BBC2"
-        app:tabMode="scrollable" />
-
+    <!-- ================= ANA PANEL (gösterge) ================= -->
     <LinearLayout
-        android:id="@+id/searchRow"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/searchInput"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:hint="Radyo veya podcast ara"
-            android:singleLine="true"
-            android:imeOptions="actionSearch"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#8B8E96"
-            android:backgroundTint="#D9B86C"
-            android:paddingStart="10dp"
-            android:paddingEnd="10dp" />
-
-        <ImageButton
-            android:id="@+id/searchButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Ara"
-            android:src="@android:drawable/ic_menu_search"
-            android:backgroundTint="#D9B86C"
-            android:background="#D9B86C"
-            android:padding="10dp" />
-    </LinearLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingBottom="8dp" />
-
-        <TextView
-            android:id="@+id/emptyText"
+        <!-- Üst bar: bağlantı + GPS | saat | hava durumu -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Gösterilecek içerik yok"
-            android:textColor="#B8BBC2"
-            android:textSize="15sp"
-            android:gravity="center"
-            android:visibility="gone" />
+            android:background="@drawable/bg_top_bar"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/connIcon"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:contentDescription="Bağlantı"
+                    android:src="@drawable/ic_wifi"
+                    android:tint="@color/gold" />
+
+                <TextView
+                    android:id="@+id/connLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/status_wifi"
+                    android:textColor="@color/gold"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/gpsIcon"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:layout_marginStart="14dp"
+                    android:contentDescription="GPS"
+                    android:src="@drawable/ic_gps"
+                    android:tint="@color/gold" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/clock"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="00:00"
+                android:textColor="@color/text_primary"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/weatherIcon"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
+                    android:contentDescription="Hava durumu"
+                    android:src="@drawable/ic_cloud"
+                    android:tint="@color/gold" />
+
+                <TextView
+                    android:id="@+id/weatherLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/temp_unknown"
+                    android:textColor="@color/gold"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Orta bölüm: sol menü | hız göstergesi | sağ menü -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="10dp">
+
+            <!-- Sol menü: RADYO, NAVİ, MÜZİK -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/menuRadio"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginVertical="5dp"
+                    android:background="@drawable/bg_menu_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/menu_radio"
+                        android:src="@drawable/ic_radio"
+                        android:tint="@color/gold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/menu_radio"
+                        android:textColor="@color/gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/menuNavi"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginVertical="5dp"
+                    android:background="@drawable/bg_menu_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/menu_navi"
+                        android:src="@drawable/ic_navi"
+                        android:tint="@color/gold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/menu_navi"
+                        android:textColor="@color/gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/menuMusic"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginVertical="5dp"
+                    android:background="@drawable/bg_menu_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/menu_music"
+                        android:src="@drawable/ic_music_note"
+                        android:tint="@color/gold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/menu_music"
+                        android:textColor="@color/gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Merkez: dairesel GPS hız göstergesi -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2.3">
+
+                <com.yasincarplay.audio.ui.dashboard.SpeedometerView
+                    android:id="@+id/speedometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </FrameLayout>
+
+            <!-- Sağ menü: TELEFON, UYGULAMALAR (İNTERNET menüsü yok) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/menuPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginVertical="5dp"
+                    android:background="@drawable/bg_menu_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/menu_phone"
+                        android:src="@drawable/ic_phone"
+                        android:tint="@color/gold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/menu_phone"
+                        android:textColor="@color/gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/menuApps"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginVertical="5dp"
+                    android:background="@drawable/bg_menu_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:contentDescription="@string/menu_apps"
+                        android:src="@drawable/ic_apps"
+                        android:tint="@color/gold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/menu_apps"
+                        android:textColor="@color/gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Alt bar: çalan medya + kontroller + Bluetooth -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="14dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_bottom_bar"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/nowTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:text="@string/nothing_playing"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/nowSubtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/text_dim"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/prevButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/prev_track"
+                android:src="@drawable/ic_skip_previous"
+                android:tint="@color/gold" />
+
+            <ImageButton
+                android:id="@+id/playPause"
+                android:layout_width="58dp"
+                android:layout_height="58dp"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/bg_menu_button"
+                android:contentDescription="@string/play"
+                android:padding="14dp"
+                android:src="@drawable/ic_play"
+                android:tint="@color/gold_bright" />
+
+            <ImageButton
+                android:id="@+id/nextButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/next_track"
+                android:src="@drawable/ic_skip_next"
+                android:tint="@color/gold" />
+
+            <ImageView
+                android:id="@+id/bluetoothIcon"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="14dp"
+                android:contentDescription="Bluetooth"
+                android:src="@drawable/ic_bluetooth"
+                android:tint="@color/gold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ================= İÇERİK PANELİ (radyo / müzik) ================= -->
+    <FrameLayout
+        android:id="@+id/contentPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F20A0A0C"
+        android:visibility="gone">
 
         <LinearLayout
-            android:id="@+id/ytPanel"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:gravity="center"
-            android:padding="20dp"
-            android:visibility="gone">
+            android:padding="16dp">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="YOUTUBE MUSIC"
-                android:textColor="#D9B86C"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:padding="12dp" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-            <EditText
-                android:id="@+id/ytQuery"
+                <ImageButton
+                    android:id="@+id/backButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/panel_back"
+                    android:src="@drawable/ic_arrow_back"
+                    android:tint="@color/gold" />
+
+                <TextView
+                    android:id="@+id/panelTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="@string/menu_radio"
+                    android:textColor="@color/gold"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/favoritesToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/panel_stroke"
+                    android:text="@string/favorites"
+                    android:textColor="@color/gold"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/podcastToggle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/panel_stroke"
+                    android:text="@string/podcast_subs"
+                    android:textColor="@color/gold"
+                    android:visibility="gone" />
+
+                <EditText
+                    android:id="@+id/searchInput"
+                    android:layout_width="180dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/gold"
+                    android:hint="@string/search_hint"
+                    android:imeOptions="actionSearch"
+                    android:singleLine="true"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_dim"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/searchButton"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginStart="6dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/search"
+                    android:src="@drawable/ic_search"
+                    android:tint="@color/gold"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/emptyText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/empty_list"
+                    android:textColor="@color/text_dim"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <!-- YouTube Music kartı (yalnızca MÜZİK panelinde) -->
+            <LinearLayout
+                android:id="@+id/ytPanel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Şarkı veya sanatçı ara"
-                android:singleLine="true"
-                android:imeOptions="actionSearch"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#8B8E96"
-                android:backgroundTint="#D9B86C"
-                android:padding="12dp" />
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_menu_button"
+                android:orientation="vertical"
+                android:padding="12dp"
+                android:visibility="gone">
 
-            <Button
-                android:id="@+id/ytSearchButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="MÜZİK ARA"
-                android:textColor="#101216"
-                android:backgroundTint="#D9B86C"
-                android:layout_marginTop="12dp" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="YOUTUBE MUSIC"
+                    android:textColor="@color/gold"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/ytOpenButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="YOUTUBE MUSIC'İ AÇ"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#303238"
-                android:layout_marginTop="8dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/ytQuery"
+                        android:layout_width="0dp"
+                        android:layout_height="44dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/gold"
+                        android:hint="@string/yt_hint"
+                        android:imeOptions="actionSearch"
+                        android:singleLine="true"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_dim" />
+
+                    <Button
+                        android:id="@+id/ytSearchButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="@color/gold"
+                        android:text="@string/yt_search"
+                        android:textColor="#101216" />
+
+                    <Button
+                        android:id="@+id/ytOpenButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="@color/panel_stroke"
+                        android:text="@string/yt_open_app"
+                        android:textColor="@color/gold" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="@string/yt_note"
+                    android:textColor="@color/text_dim"
+                    android:textSize="11sp" />
+            </LinearLayout>
         </LinearLayout>
     </FrameLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:background="#1B1D22"
-        android:padding="10dp">
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/nowTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Şu anda çalan yok"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <TextView
-                android:id="@+id/nowSubtitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#B8BBC2"
-                android:textSize="12sp"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/playPause"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="Oynat"
-            android:src="@drawable/ic_play"
-            android:background="#D9B86C"
-            android:padding="12dp" />
-    </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>

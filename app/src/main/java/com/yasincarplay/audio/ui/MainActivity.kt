@@ -8,6 +8,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -20,7 +22,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.tabs.TabLayout
 import com.yasincarplay.audio.R
 import com.yasincarplay.audio.data.Podcast
 import com.yasincarplay.audio.data.Prefs
@@ -28,19 +29,39 @@ import com.yasincarplay.audio.data.Station
 import com.yasincarplay.audio.databinding.ActivityMainBinding
 import com.yasincarplay.audio.service.AudioService
 import com.yasincarplay.audio.service.MediaIds
+import com.yasincarplay.audio.ui.dashboard.CarbonFiberDrawable
+import com.yasincarplay.audio.ui.dashboard.LocationTracker
+import com.yasincarplay.audio.ui.dashboard.StatusMonitor
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import java.util.Calendar
 
 /**
- * Telefondaki ana ekran. Servisin medya tarayıcı ağacını (Android Auto ile aynı ağaç) listeler,
- * seçilen öğeyi MediaController üzerinden çaldırır.
+ * Telefondaki AGAMA tarzı gösterge paneli.
+ *
+ * - Sol menü: RADYO, NAVİ, MÜZİK
+ * - Sağ menü: TELEFON, UYGULAMALAR (İNTERNET menüsü yok)
+ * - Merkez: gerçek GPS hız göstergesi (sahte hız gösterilmez)
+ * - Alt: çalan medya + önceki/oynat-duraklat/sonraki
+ *
+ * Android Auto tarafı bu ekrandan bağımsızdır: araç ekranında AudioService'in
+ * standart medya arayüzü kullanılır, bu panel Android Auto'da çalışmaz.
  */
 class MainActivity : AppCompatActivity() {
+
+    private enum class Panel { NONE, RADIO, MUSIC }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var prefs: Prefs
     private lateinit var browser: MediaBrowserCompat
     private var controller: MediaControllerCompat? = null
 
-    private var tabPosition = TAB_RADIO
+    private var panel: Panel = Panel.NONE
+    private var showFavorites = false
+    private var showSubs = true
+
     private var subscribedId: String? = null
     private var lastParentId: String? = null
     private val backStack = ArrayDeque<String>()
@@ -51,6 +72,17 @@ class MainActivity : AppCompatActivity() {
         actionLabel = ::actionLabelFor,
     )
 
+    // Gösterge paneli
+    private lateinit var locationTracker: LocationTracker
+    private lateinit var statusMonitor: StatusMonitor
+    private var clockHandler: Handler? = null
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    private val locationPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) locationTracker.start()
+        }
+
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* sonuç gerekmez */ }
 
@@ -60,16 +92,32 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         prefs = Prefs(this)
 
+        binding.root.background = CarbonFiberDrawable()
+
         binding.list.layoutManager = LinearLayoutManager(this)
         binding.list.adapter = adapter
 
-        listOf(R.string.tab_radio, R.string.tab_favorites, R.string.tab_podcasts, R.string.tab_youtube)
-            .forEach { binding.tabs.addTab(binding.tabs.newTab().setText(it)) }
-        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab) = selectTab(tab.position)
-            override fun onTabUnselected(tab: TabLayout.Tab) {}
-            override fun onTabReselected(tab: TabLayout.Tab) = selectTab(tab.position)
-        })
+        clockHandler = Handler(Looper.getMainLooper())
+
+        // Menü düğmeleri
+        binding.menuRadio.setOnClickListener { openPanel(Panel.RADIO) }
+        binding.menuNavi.setOnClickListener { openNavi() }
+        binding.menuMusic.setOnClickListener { openPanel(Panel.MUSIC) }
+        binding.menuPhone.setOnClickListener { openPhone() }
+        binding.menuApps.setOnClickListener { openApps() }
+        binding.backButton.setOnClickListener { closePanel() }
+
+        binding.favoritesToggle.setOnClickListener {
+            showFavorites = !showFavorites
+            updatePanelTitle()
+            if (browser.isConnected) showParent(rootForCurrent())
+        }
+
+        binding.podcastToggle.setOnClickListener {
+            showSubs = !showSubs
+            updatePanelTitle()
+            if (browser.isConnected) showParent(rootForCurrent())
+        }
 
         binding.searchButton.setOnClickListener { doSearch() }
         binding.searchInput.setOnEditorActionListener { _, actionId, _ ->
@@ -92,6 +140,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        // Alt medya kontrolleri
         binding.playPause.setOnClickListener {
             val c = controller ?: return@setOnClickListener
             val state = c.playbackState?.state
@@ -101,12 +150,19 @@ class MainActivity : AppCompatActivity() {
                 c.transportControls.play()
             }
         }
+        binding.prevButton.setOnClickListener { controller?.transportControls?.skipToPrevious() }
+        binding.nextButton.setOnClickListener { controller?.transportControls?.skipToNext() }
 
+        // Geri tuşu: önce içerik panelindeki alt listelerden, sonra panelden çık
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (!goBack()) {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
+                when {
+                    panel != Panel.NONE && backStack.isNotEmpty() -> showParent(backStack.removeLast())
+                    panel != Panel.NONE -> closePanel()
+                    else -> {
+                        isEnabled = false
+                        onBackPressedDispatcher.onBackPressed()
+                    }
                 }
             }
         })
@@ -116,6 +172,30 @@ class MainActivity : AppCompatActivity() {
             ComponentName(this, AudioService::class.java),
             connectionCallback,
             null,
+        )
+
+        // GPS hız takibi: izin yoksa istenir, izinsiz/sahte hız gösterilmez
+        locationTracker = LocationTracker(this)
+        locationTracker.onSpeedUpdate = { speed, hasData ->
+            binding.speedometer.speedKmh = speed
+            binding.speedometer.hasGpsData = hasData
+            binding.gpsIcon.alpha = if (hasData) 1f else 0.35f
+        }
+        if (locationTracker.hasPermission()) {
+            locationTracker.start()
+        } else {
+            locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+
+        statusMonitor = StatusMonitor(
+            context = this,
+            scope = scope,
+            connectionIcon = binding.connIcon,
+            connectionLabel = binding.connLabel,
+            weatherIcon = binding.weatherIcon,
+            weatherLabel = binding.weatherLabel,
+            bluetoothIcon = binding.bluetoothIcon,
+            locationTracker = locationTracker,
         )
 
         if (Build.VERSION.SDK_INT >= 33 &&
@@ -129,6 +209,9 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         browser.connect()
+        locationTracker.start()
+        statusMonitor.start()
+        updateClock()
     }
 
     override fun onStop() {
@@ -137,6 +220,89 @@ class MainActivity : AppCompatActivity() {
         subscribedId?.let { browser.unsubscribe(it, subscriptionCallback) }
         subscribedId = null
         if (browser.isConnected) browser.disconnect()
+        locationTracker.stop()
+        statusMonitor.stop()
+        clockHandler?.removeCallbacksAndMessages(null)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        scope.cancel()
+    }
+
+    // --- Saat ----------------------------------------------------------------
+
+    private fun updateClock() {
+        val now = Calendar.getInstance()
+        val hh = now.get(Calendar.HOUR_OF_DAY).toString().padStart(2, '0')
+        val mm = now.get(Calendar.MINUTE).toString().padStart(2, '0')
+        binding.clock.text = "$hh:$mm"
+        clockHandler?.postDelayed({ updateClock() }, 1000L)
+    }
+
+    // --- İçerik paneli ---------------------------------------------------------
+
+    private fun openPanel(p: Panel) {
+        panel = p
+        backStack.clear()
+        binding.contentPanel.isVisible = true
+        binding.ytPanel.isVisible = p == Panel.MUSIC
+        binding.favoritesToggle.isVisible = p == Panel.RADIO
+        binding.podcastToggle.isVisible = p == Panel.MUSIC
+        binding.searchInput.isVisible = p == Panel.RADIO
+        binding.searchButton.isVisible = p == Panel.RADIO
+        binding.searchInput.setText("")
+        updatePanelTitle()
+        if (browser.isConnected) showParent(rootForCurrent())
+    }
+
+    private fun closePanel() {
+        panel = Panel.NONE
+        backStack.clear()
+        subscribedId?.let { browser.unsubscribe(it, subscriptionCallback) }
+        subscribedId = null
+        binding.contentPanel.isVisible = false
+    }
+
+    private fun rootForCurrent(): String = when {
+        panel == Panel.MUSIC -> if (showSubs) MediaIds.PODCAST_SUBS else MediaIds.PODCAST_DISCOVER
+        showFavorites -> MediaIds.RADIO_FAVORITES
+        else -> MediaIds.RADIO_TOP
+    }
+
+    private fun updatePanelTitle() {
+        binding.panelTitle.text = getString(
+            when {
+                panel == Panel.MUSIC -> if (showSubs) R.string.menu_music else R.string.discover
+                showFavorites -> R.string.favorites
+                else -> R.string.menu_radio
+            }
+        )
+    }
+
+    private fun showParent(parentId: String) {
+        subscribedId?.let { browser.unsubscribe(it, subscriptionCallback) }
+        subscribedId = parentId
+        lastParentId = parentId
+        adapter.submit(emptyList())
+        binding.emptyText.isVisible = false
+        browser.subscribe(parentId, subscriptionCallback)
+    }
+
+    private fun doSearch() {
+        val query = binding.searchInput.text.toString().trim()
+        if (!browser.isConnected) return
+        if (query.isEmpty()) {
+            backStack.clear()
+            showParent(rootForCurrent())
+            return
+        }
+        subscribedId?.let { browser.unsubscribe(it, subscriptionCallback) }
+        subscribedId = null
+        backStack.clear()
+        adapter.submit(emptyList())
+        binding.emptyText.isVisible = false
+        browser.search(query, null, searchCallback)
     }
 
     // --- Servis bağlantısı -----------------------------------------------------
@@ -149,7 +315,7 @@ class MainActivity : AppCompatActivity() {
             MediaControllerCompat.setMediaController(this@MainActivity, c)
             updateNowPlaying(c.metadata)
             updatePlayButton(c.playbackState)
-            if (tabPosition != TAB_YOUTUBE) showParent(lastParentId ?: rootFor(tabPosition))
+            if (panel != Panel.NONE) showParent(lastParentId ?: rootForCurrent())
         }
     }
 
@@ -163,6 +329,8 @@ class MainActivity : AppCompatActivity() {
             if (parentId != subscribedId) return
             if (children.isEmpty() && parentId == MediaIds.PODCAST_SUBS) {
                 // Abonelik yoksa önerilenleri göster
+                showSubs = false
+                updatePanelTitle()
                 showParent(MediaIds.PODCAST_DISCOVER)
                 return
             }
@@ -189,77 +357,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // --- Gezinme -----------------------------------------------------------------
-
-    private fun rootFor(tab: Int): String = when (tab) {
-        TAB_RADIO -> MediaIds.RADIO_TOP
-        TAB_FAVORITES -> MediaIds.RADIO_FAVORITES
-        else -> MediaIds.PODCAST_SUBS
-    }
-
-    private fun selectTab(position: Int) {
-        tabPosition = position
-        backStack.clear()
-        val isYoutube = position == TAB_YOUTUBE
-        binding.ytPanel.isVisible = isYoutube
-        binding.list.isVisible = !isYoutube
-        binding.searchRow.isVisible = !isYoutube
-        binding.emptyText.isVisible = false
-        if (!isYoutube) {
-            binding.searchInput.setText("")
-            if (browser.isConnected) showParent(rootFor(position))
-        }
-    }
-
-    private fun showParent(parentId: String) {
-        subscribedId?.let { browser.unsubscribe(it, subscriptionCallback) }
-        subscribedId = parentId
-        lastParentId = parentId
-        adapter.submit(emptyList())
-        binding.emptyText.isVisible = false
-        browser.subscribe(parentId, subscriptionCallback)
-    }
-
-    /** Geri tuşu: önce podcast bölümlerinden / arama sonuçlarından çık. Eylem yapıldıysa true. */
-    private fun goBack(): Boolean {
-        if (backStack.isNotEmpty()) {
-            showParent(backStack.removeLast())
-            return true
-        }
-        if (subscribedId == null && tabPosition != TAB_YOUTUBE && browser.isConnected) {
-            // Arama sonuçları gösteriliyordu
-            binding.searchInput.setText("")
-            showParent(rootFor(tabPosition))
-            return true
-        }
-        return false
-    }
-
-    private fun doSearch() {
-        val query = binding.searchInput.text.toString().trim()
-        if (!browser.isConnected) return
-        if (query.isEmpty()) {
-            backStack.clear()
-            showParent(rootFor(tabPosition))
-            return
-        }
-        subscribedId?.let { browser.unsubscribe(it, subscriptionCallback) }
-        subscribedId = null
-        backStack.clear()
-        adapter.submit(emptyList())
-        binding.emptyText.isVisible = false
-        browser.search(query, null, searchCallback)
-    }
-
     // --- Liste etkileşimi ---------------------------------------------------------
 
     private fun onItemClick(item: MediaBrowserCompat.MediaItem) {
         val id = item.mediaId ?: return
         if (item.isBrowsable) {
-            backStack.addLast(subscribedId ?: rootFor(tabPosition))
+            backStack.addLast(subscribedId ?: rootForCurrent())
             showParent(id)
         } else {
-            controller?.transportControls?.playFromMediaId(id, item.description.extras)
+            // Önceki/sonraki için mevcut liste bağlamını servise ilet
+            val extras = Bundle().apply {
+                item.description.extras?.let { putAll(it) }
+                val listIds = adapter.items().filter { !it.isBrowsable }.mapNotNull { it.mediaId }
+                if (listIds.isNotEmpty()) putStringArray(MediaIds.EXTRA_LIST_IDS, listIds.toTypedArray())
+            }
+            controller?.transportControls?.playFromMediaId(id, extras)
         }
     }
 
@@ -330,6 +442,35 @@ class MainActivity : AppCompatActivity() {
         binding.playPause.contentDescription = getString(if (playing) R.string.pause else R.string.play)
     }
 
+    // --- NAVİ / TELEFON / UYGULAMALAR ---------------------------------------------------
+
+    private fun openNavi() {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0"))
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.navi_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openPhone() {
+        val intent = Intent(Intent.ACTION_DIAL)
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.phone_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun openApps() {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        try {
+            startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.apps_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // --- YouTube Music -----------------------------------------------------------------
 
     /**
@@ -352,10 +493,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private companion object {
-        const val TAB_RADIO = 0
-        const val TAB_FAVORITES = 1
-        const val TAB_PODCASTS = 2
-        const val TAB_YOUTUBE = 3
         const val YT_MUSIC_PACKAGE = "com.google.android.apps.youtube.music"
     }
 }

@@ -28,4 +28,26 @@
     <string name="root_podcast_subs">Abonelikler</string>
     <string name="root_podcast_top">Podcast keşfet (Türkiye)</string>
     <string name="playback_error">Oynatma hatası</string>
+
+    <!-- Gösterge paneli -->
+    <string name="menu_radio">RADYO</string>
+    <string name="menu_navi">NAVİ</string>
+    <string name="menu_music">MÜZİK</string>
+    <string name="menu_phone">TELEFON</string>
+    <string name="menu_apps">UYGULAMALAR</string>
+    <string name="gps_unit">km/h</string>
+    <string name="gps_no_data">GPS verisi yok</string>
+    <string name="favorites">★ FAVORİLER</string>
+    <string name="discover">KEŞFET</string>
+    <string name="podcast_subs">ABONELİKLER</string>
+    <string name="panel_back">Panele dön</string>
+    <string name="status_wifi">WIFI</string>
+    <string name="status_mobile">VERİ</string>
+    <string name="status_offline">YOK</string>
+    <string name="temp_unknown">—</string>
+    <string name="prev_track">Önceki</string>
+    <string name="next_track">Sonraki</string>
+    <string name="navi_unavailable">Harita uygulaması bulunamadı.</string>
+    <string name="phone_unavailable">Telefon uygulaması bulunamadı.</string>
+    <string name="apps_unavailable">Uygulama başlatıcı bulunamadı.</string>
 </resources>
