@@ -1,5 +1,3 @@
-
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -17,7 +15,8 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:padding="12dp" />
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabs"
@@ -27,8 +26,7 @@
         app:tabIndicatorColor="#D9B86C"
         app:tabSelectedTextColor="#D9B86C"
         app:tabTextColor="#B8BBC2"
-        app:tabMode="scrollable"
-        app:tabGravity="fill" />
+        app:tabMode="scrollable" />
 
     <LinearLayout
         android:id="@+id/searchRow"
@@ -37,7 +35,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingTop="10dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="10dp">
 
         <EditText
             android:id="@+id/searchInput"
@@ -47,12 +45,11 @@
             android:hint="Radyo veya podcast ara"
             android:singleLine="true"
             android:imeOptions="actionSearch"
-            android:inputType="text"
             android:textColor="#FFFFFF"
-            android:textColorHint="#9297A1"
+            android:textColorHint="#8B8E96"
             android:backgroundTint="#D9B86C"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp" />
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp" />
 
         <ImageButton
             android:id="@+id/searchButton"
@@ -60,9 +57,8 @@
             android:layout_height="48dp"
             android:contentDescription="Ara"
             android:src="@android:drawable/ic_menu_search"
-            android:background="@android:drawable/btn_default"
-            android:backgroundTint="#292B30"
-            android:tint="#D9B86C"
+            android:backgroundTint="#D9B86C"
+            android:background="#D9B86C"
             android:padding="10dp" />
     </LinearLayout>
 
@@ -83,12 +79,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:gravity="center"
             android:text="Gösterilecek içerik yok"
-            android:textColor="#9297A1"
+            android:textColor="#B8BBC2"
             android:textSize="15sp"
-            android:visibility="gone"
-            android:padding="24dp" />
+            android:gravity="center"
+            android:visibility="gone" />
 
         <LinearLayout
             android:id="@+id/ytPanel"
@@ -107,30 +102,19 @@
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:padding="16dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Müzik aramak için aşağıya yaz."
-                android:textColor="#B8BBC2"
-                android:textSize="14sp"
-                android:gravity="center"
-                android:paddingBottom="12dp" />
+                android:padding="12dp" />
 
             <EditText
                 android:id="@+id/ytQuery"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:hint="Şarkı veya sanatçı adı"
+                android:layout_height="wrap_content"
+                android:hint="Şarkı veya sanatçı ara"
                 android:singleLine="true"
                 android:imeOptions="actionSearch"
-                android:inputType="text"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#9297A1"
+                android:textColorHint="#8B8E96"
                 android:backgroundTint="#D9B86C"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp" />
+                android:padding="12dp" />
 
             <Button
                 android:id="@+id/ytSearchButton"
@@ -139,7 +123,7 @@
                 android:text="MÜZİK ARA"
                 android:textColor="#101216"
                 android:backgroundTint="#D9B86C"
-                android:layout_marginTop="14dp" />
+                android:layout_marginTop="12dp" />
 
             <Button
                 android:id="@+id/ytOpenButton"
@@ -147,7 +131,7 @@
                 android:layout_height="wrap_content"
                 android:text="YOUTUBE MUSIC'İ AÇ"
                 android:textColor="#FFFFFF"
-                android:backgroundTint="#292B30"
+                android:backgroundTint="#303238"
                 android:layout_marginTop="8dp" />
         </LinearLayout>
     </FrameLayout>
@@ -158,23 +142,21 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="#1B1D22"
-        android:padding="12dp">
+        android:padding="10dp">
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center_vertical">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/nowTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Henüz çalan yok"
+                android:text="Şu anda çalan yok"
                 android:textColor="#FFFFFF"
-                android:textSize="15sp"
-                android:textStyle="bold"
+                android:textSize="14sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
 
@@ -182,7 +164,7 @@
                 android:id="@+id/nowSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#9297A1"
+                android:textColor="#B8BBC2"
                 android:textSize="12sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
@@ -190,13 +172,11 @@
 
         <ImageButton
             android:id="@+id/playPause"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:contentDescription="Oynat"
             android:src="@drawable/ic_play"
-            android:background="@android:drawable/btn_default"
-            android:backgroundTint="#D9B86C"
-            android:tint="#101216"
+            android:background="#D9B86C"
             android:padding="12dp" />
     </LinearLayout>
 
