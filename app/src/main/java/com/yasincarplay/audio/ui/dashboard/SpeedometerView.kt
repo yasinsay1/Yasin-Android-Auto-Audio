@@ -71,13 +71,13 @@ class SpeedometerView @JvmOverloads constructor(
         paint.strokeWidth = zoneWidth
         drawZone(canvas, cx, cy, r, 0f, 80f, colorGreen, 0x66)
         drawZone(canvas, cx, cy, r, 80f, 140f, colorGold, 0x66)
-        drawZone(canvas, cx, cy, r, 140f, maxSpeed, colorRed, 0x66)
+        drawZone(canvas, cx, cy, r, 140f.toFloat(), colorRed, 0x66)
 
         // 3) İnce tıklar (10 km/h'de bir), kalın tıklar (20 km/h'de bir)
         val tickOuter = r - zoneWidth - dp(2f)
         for (s in 0..maxSpeed step 10) {
             val major = s % 20 == 0
-            val a = Math.toRadians(angleFor(s).toDouble())
+            val a = Math.toRadians(angleFor(s.toFloat()).toDouble())
             val inner = tickOuter - (if (major) dp(14f) else dp(8f))
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = if (major) dp(2.5f) else dp(1.2f)
@@ -95,7 +95,7 @@ class SpeedometerView @JvmOverloads constructor(
             paint.strokeWidth = zoneWidth + dp(4f)
             paint.strokeCap = Paint.Cap.ROUND
             paint.color = colorGoldBright
-            val end = angleFor(min(speedKmh, maxSpeed))
+            val end = angleFor(min(speedKmh.toFloat(), maxSpeed))
             canvas.drawArc(arcRect, startAngle, end - startAngle, false, paint)
             paint.strokeCap = Paint.Cap.BUTT
         }
